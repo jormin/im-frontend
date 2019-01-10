@@ -51,3 +51,14 @@ export function reset (params) {
     params: params
   })
 }
+
+/**
+ * 获取用户信息
+ * @returns {*}
+ */
+export function getUserInfo () {
+  return request.request({
+    url: '/auth/user-info',
+    method: 'get'
+  })
+}

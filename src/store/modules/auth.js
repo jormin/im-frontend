@@ -4,32 +4,27 @@ import {
   SET_AUTH_TOKEN,
   SET_USER_INFO
 } from '@/store/mutation-types'
-import {login} from '@/api/auth'
+import {login, getUserInfo} from '@/api/auth'
 import {setToken} from '@/utils/token'
 
 Vue.use(Vuex)
 
 const auth = {
   state: {
-    // 当前用户token
-    token: '',
     // 当前用户信息
     currentUser: {
       id: '',
       nickname: '',
       phone: '',
       gender: '',
-      avatar: ''
+      avatar: '',
+      createTime: ''
     }
   },
   getters: {
     // 获取Token
     getToken: (state) => {
-      return state.token
-    },
-    // 获取用户信息
-    getUserInfo: (state) => {
-      return state.currentUser
+      return state.currentUser.token
     }
   },
   mutations: {
@@ -51,6 +46,17 @@ const auth = {
           commit('SET_USER_INFO', user)
           commit('SET_AUTH_TOKEN', token)
           setToken(token)
+          resolve()
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+    GetUserInfo: ({commit}) => {
+      return new Promise((resolve, reject) => {
+        getUserInfo().then(response => {
+          let user = response.data.user
+          commit('SET_USER_INFO', user)
           resolve()
         }).catch(error => {
           reject(error)

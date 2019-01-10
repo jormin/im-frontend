@@ -322,7 +322,21 @@
 </template>
 
 <script>
-export default {}
+import {mapState, mapGetters} from 'vuex'
+export default {
+  data () {
+    return {}
+  },
+  computed: {
+    ...mapState({currentUser: 'auth.currentUser'}),
+    ...mapGetters({token: 'auth.getToken'})
+  },
+  created () {
+    if (!this.$store.state.auth.currentUser.id) {
+      this.$store.dispatch('GetUserInfo')
+    }
+  }
+}
 </script>
 
 <style>

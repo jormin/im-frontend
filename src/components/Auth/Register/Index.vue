@@ -11,9 +11,7 @@
         </el-form-item>
         <el-form-item prop="code">
           <el-input placeholder="请输入验证码" v-model="registerForm.code">
-            <el-button slot="append" @click="sendCode('registerForm')" :disabled="codeButton.disabled">
-              {{codeButton.name}}
-            </el-button>
+            <SendCodeButton type="0"></SendCodeButton>
           </el-input>
         </el-form-item>
         <el-form-item prop="password">
@@ -23,7 +21,7 @@
           <el-input v-model="registerForm.nickname" placeholder="请输入昵称" type="nickname"></el-input>
         </el-form-item>
         <el-form-item class="auth-login-wrap">
-          <el-button type="primary" @click="register('registerForm')" class="btn-login">立即注册</el-button>
+          <el-button type="primary" @click="register()" class="btn-login">立即注册</el-button>
           <router-link to="/auth/login">
             <el-button type="text">已有账号？点击登录</el-button>
           </router-link>
@@ -34,16 +32,17 @@
 </template>
 
 <script>
-import {register, sendCode} from '@/api/auth'
+import {register} from '@/api/auth'
+import SendCodeButton from '@/components/Common/SendCodeButton/Index'
 
 export default {
+  components: {
+    SendCodeButton
+  },
   data () {
     return {
+      formName: 'registerForm',
       labelPosition: 'top',
-      codeButton: {
-        name: '发送验证码',
-        disabled: false
-      },
       registerForm: {
         phone: '',
         password: '',
@@ -68,40 +67,22 @@ export default {
     }
   },
   methods: {
-    sendCode (formName) {
-      this.$refs[formName].validateField(['phone'], (error) => {
+    sendCode (callback) {
+      this.$refs[this.formName].validateField(['phone'], (error) => {
         if (!error) {
-          this.codeButton.disabled = true
-          sendCode({phone: this.registerForm.phone}).then((response) => {
-            this.countdown(response.data.expireTime)
-          })
+          callback()
         } else {
           return false
         }
       })
     },
-    countdown (time) {
-      let interval = setInterval(() => {
-        time--
-        this.codeButton.name = '重新发送(' + time + ')'
-        if (time === 0) {
-          clearInterval(interval)
-          this.codeButton.name = '发送验证码'
-          this.codeButton.disabled = false
-        }
-      }, 1000)
-    },
-    register (formName) {
-      this.$refs[formName].validate((valid) => {
+    register () {
+      this.$refs[this.formName].validate((valid) => {
         if (valid) {
           register(this.registerForm).then(response => {
-            localStorage.setItem('token', response.token)
-            let _this = this
-            this.$message({
-              message: response.message,
-              type: 'success'
-            })
-            _this.$router.push('/')
+            if (response.code === 0) {
+              this.$router.push('/auth/login')
+            }
           })
         } else {
           return false
