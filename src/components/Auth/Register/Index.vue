@@ -11,7 +11,9 @@
         </el-form-item>
         <el-form-item prop="code">
           <el-input placeholder="请输入验证码" v-model="registerForm.code">
-            <SendCodeButton></SendCodeButton>
+            <el-button slot="append" @click="sendCode()" :disabled="codeButton.disabled">
+              {{codeButton.name}}
+            </el-button>
           </el-input>
         </el-form-item>
         <el-form-item prop="password">
@@ -32,17 +34,18 @@
 </template>
 
 <script>
-import {register} from '@/api/auth'
-import SendCodeButton from '@/components/Common/SendCodeButton/Index'
+import {register, sendCode} from '@/api/auth'
 
 export default {
-  components: {
-    SendCodeButton
-  },
   data () {
     return {
       formName: 'registerForm',
       labelPosition: 'top',
+      codeButton: {
+        name: '发送验证码',
+        disabled: false,
+        interval: null
+      },
       registerForm: {
         phone: '',
         password: '',
@@ -67,14 +70,36 @@ export default {
     }
   },
   methods: {
-    sendCode (callback) {
+    sendCode () {
       this.$refs[this.formName].validateField(['phone'], (error) => {
         if (!error) {
-          callback()
+          this.codeButton.disabled = true
+          let params = {
+            type: 0,
+            phone: this.registerForm.phone
+          }
+          sendCode(params).then((response) => {
+            this.countdown(response.data.expireTime)
+          })
         } else {
           return false
         }
       })
+    },
+    countdown (time) {
+      this.interval = setInterval(() => {
+        time--
+        this.codeButton.name = '重新发送(' + time + ')'
+        if (time === 0) {
+          this.stopCountdown()
+        }
+      }, 1000)
+    },
+    stopCountdown () {
+      clearInterval(this.interval)
+      this.interval = null
+      this.codeButton.name = '发送验证码'
+      this.codeButton.disabled = false
     },
     register () {
       this.$refs[this.formName].validate((valid) => {
@@ -82,6 +107,8 @@ export default {
           register(this.registerForm).then(response => {
             if (response.code === 0) {
               this.$router.push('/auth/login')
+            } else {
+              this.stopCountdown()
             }
           })
         } else {

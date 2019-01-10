@@ -10,8 +10,8 @@
           <el-input v-model="resetForm.phone" placeholder="请输入手机号"></el-input>
         </el-form-item>
         <el-form-item prop="code">
-          <el-input placeholder="请输入验证码" v-model="code">
-            <el-button slot="append" @click="sendCode('resetForm')" :disabled="codeButton.disabled">
+          <el-input placeholder="请输入验证码" v-model="resetForm.code">
+            <el-button slot="append" @click="sendCode()" :disabled="codeButton.disabled">
               {{codeButton.name}}
             </el-button>
           </el-input>
@@ -20,7 +20,7 @@
           <el-input v-model="resetForm.password" placeholder="请输入密码" type="password"></el-input>
         </el-form-item>
         <el-form-item class="auth-login-wrap">
-          <el-button type="primary" @click="reset('resetForm')" class="btn-login">找回密码</el-button>
+          <el-button type="primary" @click="reset()" class="btn-login">找回密码</el-button>
           <router-link to="/auth/login">
             <el-button type="text">已有账号？点击登录</el-button>
           </router-link>
@@ -36,10 +36,12 @@ import {reset, sendCode} from '@/api/auth'
 export default {
   data () {
     return {
+      formName: 'resetForm',
       labelPosition: 'top',
       codeButton: {
         name: '发送验证码',
-        disabled: false
+        disabled: false,
+        interval: null
       },
       resetForm: {
         phone: '',
@@ -62,40 +64,52 @@ export default {
     }
   },
   methods: {
-    sendCode (formName) {
-      this.$refs[formName].validate((valid) => {
+    sendCode () {
+      this.$refs[this.formName].validateField(['phone'], (error) => {
+        if (!error) {
+          this.codeButton.disabled = true
+          let params = {
+            type: 1,
+            phone: this.resetForm.phone
+          }
+          sendCode(params).then((response) => {
+            this.countdown(response.data.expireTime)
+          })
+        } else {
+          return false
+        }
+      })
+    },
+    countdown (time) {
+      this.interval = setInterval(() => {
+        time--
+        this.codeButton.name = '重新发送(' + time + ')'
+        if (time === 0) {
+          this.stopCountdown()
+        }
+      }, 1000)
+    },
+    stopCountdown () {
+      clearInterval(this.interval)
+      this.interval = null
+      this.codeButton.name = '发送验证码'
+      this.codeButton.disabled = false
+    },
+    reset () {
+      this.$refs[this.formName].validate((valid) => {
         if (valid) {
-          sendCode(this.loginForm).then(response => {
-            localStorage.setItem('token', response.token)
-            let _this = this
-            this.$message({
-              message: response.message,
-              type: 'success'
-            })
-            _this.$router.push('/')
+          reset(this.resetForm).then(response => {
+            if (response.code === 0) {
+              this.$router.push('/auth/login')
+            } else {
+              this.stopCountdown()
+            }
           })
         } else {
           return false
         }
       })
     }
-  },
-  register (formName) {
-    this.$refs[formName].validate((valid) => {
-      if (valid) {
-        reset(this.loginForm).then(response => {
-          localStorage.setItem('token', response.token)
-          let _this = this
-          this.$message({
-            message: response.message,
-            type: 'success'
-          })
-          _this.$router.push('/')
-        })
-      } else {
-        return false
-      }
-    })
   }
 }
 </script>

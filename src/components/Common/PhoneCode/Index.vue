@@ -1,5 +1,5 @@
 <template>
-  <el-button slot="append" @click="sendCode()" :disabled="codeButton.disabled">
+  <el-button @click="sendCode()" :disabled="codeButton.disabled">
     {{codeButton.name}}
   </el-button>
 </template>
@@ -19,7 +19,7 @@ export default {
     sendCode () {
       this.$emit('sendCode', () => {
         this.codeButton.disabled = true
-        let params = {phone: this.registerForm.phone, type: 0}
+        let params = {phone: this.registerForm.phone, type: this.props.type}
         sendCode(params).then((response) => {
           this.countdown(response.data.expireTime)
         })

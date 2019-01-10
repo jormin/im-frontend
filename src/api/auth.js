@@ -48,7 +48,7 @@ export function reset (params) {
   return request.request({
     url: '/auth/reset',
     method: 'post',
-    params: params
+    data: params
   })
 }
 

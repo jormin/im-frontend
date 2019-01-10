@@ -14,7 +14,7 @@
         </el-form-item>
         <el-form-item class="auth-login-wrap">
           <el-col :span="24">
-            <el-button type="primary" @click="login('loginForm')" class="btn-login">立即登录</el-button>
+            <el-button type="primary" @click="login()" class="btn-login">立即登录</el-button>
           </el-col>
           <el-col :span="12" class="left">
             <router-link to="/auth/register">
@@ -37,6 +37,7 @@
 export default {
   data () {
     return {
+      formName: 'loginForm',
       labelPosition: 'top',
       loginForm: {
         phone: '',
@@ -64,8 +65,8 @@ export default {
     }
   },
   methods: {
-    login (formName) {
-      this.$refs[formName].validate(valid => {
+    login () {
+      this.$refs[this.formName].validate(valid => {
         if (valid) {
           this.$store.dispatch('Login', this.loginForm).then(() => {
             this.$router.push({
