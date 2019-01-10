@@ -4,7 +4,7 @@ import Auth from '@/views/auth/index'
 import Login from '@/views/auth/login'
 import Register from '@/views/auth/register'
 import Reset from '@/views/auth/reset'
-import store from '@/store/index'
+import {getToken} from '@/utils/token'
 
 const routes = [
   {
@@ -36,7 +36,7 @@ router.beforeEach((to, from, next) => {
     document.title = to.meta.title
   }
   const nextRoutes = ['/']
-  let token = store.state.token
+  let token = getToken()
   if (nextRoutes.indexOf(to.path) >= 0) {
     if (token === undefined || !token) {
       return next('/auth/login')

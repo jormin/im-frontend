@@ -33,7 +33,6 @@
 </template>
 
 <script>
-import {login} from '@/api/auth'
 
 export default {
   data () {
@@ -51,21 +50,27 @@ export default {
           {required: true, message: '请输入密码', trigger: 'change'},
           {min: 6, max: 20, message: '请输入6-20位密码'}
         ]
-      }
+      },
+      // 登录后跳转页面
+      redirect: ''
+    }
+  },
+  watch: {
+    $route: {
+      handler: function (route) {
+        this.redirect = route.query && route.query.redirect
+      },
+      immediate: true
     }
   },
   methods: {
     login (formName) {
-      this.$refs[formName].validate((valid) => {
+      this.$refs[formName].validate(valid => {
         if (valid) {
-          login(this.loginForm).then(response => {
-            localStorage.setItem('token', response.token)
-            let _this = this
-            this.$message({
-              message: response.message,
-              type: 'success'
+          this.$store.dispatch('Login', this.loginForm).then(() => {
+            this.$router.push({
+              path: this.redirect || '/'
             })
-            _this.$router.push('/')
           })
         } else {
           return false

@@ -71,7 +71,30 @@ export default {
     sendCode (formName) {
       this.$refs[formName].validateField(['phone'], (error) => {
         if (!error) {
-          sendCode(this.registerForm).then(response => {
+          this.codeButton.disabled = true
+          sendCode({phone: this.registerForm.phone}).then((response) => {
+            this.countdown(response.data.expireTime)
+          })
+        } else {
+          return false
+        }
+      })
+    },
+    countdown (time) {
+      let interval = setInterval(() => {
+        time--
+        this.codeButton.name = '重新发送(' + time + ')'
+        if (time === 0) {
+          clearInterval(interval)
+          this.codeButton.name = '发送验证码'
+          this.codeButton.disabled = false
+        }
+      }, 1000)
+    },
+    register (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          register(this.registerForm).then(response => {
             localStorage.setItem('token', response.token)
             let _this = this
             this.$message({
@@ -85,23 +108,6 @@ export default {
         }
       })
     }
-  },
-  register (formName) {
-    this.$refs[formName].validate((valid) => {
-      if (valid) {
-        register(this.registerForm).then(response => {
-          localStorage.setItem('token', response.token)
-          let _this = this
-          this.$message({
-            message: response.message,
-            type: 'success'
-          })
-          _this.$router.push('/')
-        })
-      } else {
-        return false
-      }
-    })
   }
 }
 </script>
