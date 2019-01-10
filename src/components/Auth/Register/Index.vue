@@ -11,7 +11,7 @@
         </el-form-item>
         <el-form-item prop="code">
           <el-input placeholder="请输入验证码" v-model="registerForm.code">
-            <SendCodeButton type="0"></SendCodeButton>
+            <SendCodeButton></SendCodeButton>
           </el-input>
         </el-form-item>
         <el-form-item prop="password">

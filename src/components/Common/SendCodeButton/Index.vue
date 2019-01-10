@@ -19,7 +19,7 @@ export default {
     sendCode () {
       this.$emit('sendCode', () => {
         this.codeButton.disabled = true
-        let params = {phone: this.registerForm.phone, type: this.props.type}
+        let params = {phone: this.registerForm.phone, type: 0}
         sendCode(params).then((response) => {
           this.countdown(response.data.expireTime)
         })
